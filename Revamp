@@ -1,2 +1,292 @@
-script_key="jJfnavOTNyzQSmtFSowcWGJfGYFvYhHC";
-loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/808abe93d988fcb8c3aa0c850e7ce331.lua"))()
+Leomar Loves Ashlynn <3
+leomardagoat
+discord.gg/robloxstock ---> best cheap robux and accounts
+
+vamp[perᴠ]
+ — 04/24/2025 9:17 PM
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Phantom-cc/Phantom/refs/heads/main/Hoopz"))()
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 04/24/2025 9:17 PM
+u got the src?
+vamp[perᴠ]
+ — 04/24/2025 9:18 PM
+na
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 04/24/2025 9:19 PM
+alr
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 04/24/2025 9:28 PM
+send me phantoms discord server
+Btw how did he use chatgpt to make his script
+its impossiblr
+vamp[perᴠ]
+ — 04/24/2025 9:30 PM
+no its not impossible
+Its easy
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 04/24/2025 9:32 PM
+how
+what do u tell it
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 04/24/2025 9:46 PM
+?
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 3:30 PM
+yooo
+u ready for code
+?
+vamp[perᴠ]
+ — 05/13/2025 3:40 PM
+Yea
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 3:41 PM
+XRWRC3Y2YZ37HPJ9
+vamp[perᴠ]
+ — 05/13/2025 3:41 PM
+Oh shit it actually worked
+Im making your script right now
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 3:42 PM
+alr
+vamp[perᴠ]
+ — 05/13/2025 3:43 PM
+Do you want me to pick a library for u or you got one specific
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 3:43 PM
+pick one
+vamp[perᴠ]
+ — 05/13/2025 3:44 PM
+igh
+Do you want this one?
+Image
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 3:45 PM
+sure
+vamp[perᴠ]
+ — 05/13/2025 3:45 PM
+Igh
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 4:30 PM
+yo
+u done yet
+vamp[perᴠ]
+ — 05/13/2025 4:51 PM
+Almost
+Gotta fix one thing
+vamp[perᴠ]
+ — 05/13/2025 5:06 PM
+This what it looks like rn
+@Leomar Loves Ashlynn <3
+@Leomar Loves Ashlynn <3 ty for buying
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Your Script Name",
+   Icon = 0,
+   LoadingTitle = "Script Name",
+Expand
+1stcustomerscriptleomar.txt
+5 KB
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/13/2025 5:18 PM
+ty
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/14/2025 6:34 PM
+there
+vamp[perᴠ]
+ — 05/14/2025 6:34 PM
+I got it
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/14/2025 6:35 PM
+wait no
+thats not the script
+vamp[perᴠ]
+ — 05/14/2025 6:36 PM
+I made the name and stuff for u
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/14/2025 6:36 PM
+dang it
+alr send it
+vamp[perᴠ]
+ — 05/14/2025 6:37 PM
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Yoogp/Uhh/refs/heads/main/Protected_2054377369117255.lua.txt"))()
+Here you go
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/14/2025 6:37 PM
+ty
+Leomar Loves Ashlynn <3[ƘƘƘ]
+ — 05/16/2025 10:13 AM
+vamp
+can u make add auto shoot when i jump
+to my script
+and mags and reach
+and range indicator?
+﻿
+vamp
+yxpi
+[perᴠ]
+ 
+ 
+ 
+https://slat.cc/vampire.
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Your Script Name",
+   Icon = 0,
+   LoadingTitle = "Script Name",
+   LoadingSubtitle = "by Author",
+   Theme = "Default",
+   ConfigurationSaving = {
+      Enabled = true,
+      FileName = "Big Hub"
+   },
+   KeySystem = false
+})
+
+local Tab = Window:CreateTab("Shooting", 4483362458)
+Tab:CreateSection("Shooting Features")
+
+local MobileAimbotEnabled = false
+local AutoPowerEnabled = false
+local XOffset = 74.5
+local YOffset = 70
+
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Camera = workspace.CurrentCamera
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local function GetArc(dist)
+    return ({
+        [59] = 34, [60] = 34, [61] = 34, [62] = 34,
+        [63] = 32, [64] = 32, [65] = 32,
+        [66] = 29, [67] = 29,
+        [68] = 27, [69] = 27,
+        [70] = 24, [71] = 24, [72] = 22
+    })[dist] or 4
+end
+
+
+local function IsHoldingBasketball()
+    local Basketball = Character:FindFirstChild("Basketball")
+    return Basketball and Basketball:FindFirstChild("Ball")
+end
+
+local function GetGoal()
+    local Distance, Goal = math.huge, nil
+    local CharacterPosition = Character.PrimaryPart.Position
+    for _, container in ipairs({workspace:FindFirstChild("Courts"), workspace:FindFirstChild("PracticeArea")}) do
+        if container then
+            for _, court in ipairs(container:GetChildren()) do
+                for _, Obj in ipairs(court:GetDescendants()) do
+                    if Obj.Name == "Swish" and Obj.Parent:FindFirstChildOfClass("TouchTransmitter") then
+                        local Magnitude = (CharacterPosition - Obj.Parent.Position).Magnitude
+                        if Magnitude < Distance then
+                            Distance, Goal = Magnitude, Obj.Parent
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return Goal, Distance
+end
+
+local function TriggerTouchEvent()
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355 + XOffset, YOffset)
+    task.wait(0.01)
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355 + XOffset, YOffset)
+end
+
+local function GetPlayerVelocity()
+    return Character:WaitForChild("HumanoidRootPart").Velocity
+end
+
+local function AdjustCameraForJump()
+    if not MobileAimbotEnabled or not IsHoldingBasketball() then return end
+    local Goal, Distance = GetGoal()
+    if Goal then
+        TriggerTouchEvent()
+        local velocity = GetPlayerVelocity()
+        local velocityAdjustment = velocity * 0.05
+        local BasketPosition = Goal.Position + Vector3.new(0, GetArc(math.floor(Distance)), 0) + velocityAdjustment
+        local OldCFrame = Camera.CFrame
+        Camera.CFrame = CFrame.new(Character.Head.Position, BasketPosition)
+        task.wait(0.02)
+        Camera.CFrame = OldCFrame
+    end
+end
+
+local function SetAutoPower(Distance)
+    if not AutoPowerEnabled then return end
+    local Power = nil
+    if Distance >= 60 and Distance <= 61 then Power = 75 end
+    if Distance >= 38 and Distance <= 39 then Power = 60 end
+    if Distance >= 16 and Distance <= 17 then Power = 30 end
+    if Distance >= 51 and Distance <= 52 then Power = 65 end
+    if Distance >= 49 and Distance <= 50 then Power = 65 end
+    if Distance >= 43 and Distance <= 44 then Power = 60 end
+    if Distance >= 47 and Distance <= 48 then Power = 65 end
+    if Distance >= 37 and Distance <= 38 then Power = 55 end
+    if Distance == 54 then Power = 70 end
+    if Distance >= 44 and Distance <= 45 then Power = 60 end
+    if Distance >= 8 and Distance <= 12 then Power = 20 end
+    if Distance >= 17 and Distance <= 19 then Power = 20 end
+    if Power then Player:SetAttribute("Power", Power) end
+end
+
+local Humanoid = Character:WaitForChild("Humanoid")
+Humanoid.StateChanged:Connect(function(_, NewState)
+    if NewState == Enum.HumanoidStateType.Jumping then
+        task.wait(0.3)
+        local _, Distance = GetGoal()
+        AdjustCameraForJump()
+        SetAutoPower(math.floor(Distance))
+    end
+end)
+
+Tab:CreateToggle({
+   Name = "Mobile Aimbot",
+   CurrentValue = false,
+   Flag = "MobileAimbot",
+   Callback = function(Value)
+       MobileAimbotEnabled = Value
+   end
+})
+
+Tab:CreateToggle({
+   Name = "Auto Power",
+   CurrentValue = false,
+   Flag = "AutoPower",
+   Callback = function(Value)
+       AutoPowerEnabled = Value
+   end
+})
+
+Tab:CreateSlider({
+   Name = "Aimbot X Offset",
+   Range = {60, 90},
+   Increment = 0.5,
+   Suffix = "px",
+   CurrentValue = 74.5,
+   Flag = "XOffset",
+   Callback = function(Value)
+       XOffset = Value
+   end
+})
+
+Tab:CreateSlider({
+   Name = "Aimbot Y Offset",
+   Range = {50, 100},
+   Increment = 0.5,
+   Suffix = "px",
+   CurrentValue = 70,
+   Flag = "YOffset",
+   Callback = function(Value)
+       YOffset = Value
+   end
+})
+1stcustomerscriptleomar.txt
+5 KB
