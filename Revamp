@@ -74,10 +74,10 @@ local function GetPlayerVelocity()
 end
 
 local function AdjustCameraForJump()
+    -- No automatic shooting, just adjust camera if the aimbot is enabled
     if not MobileAimbotEnabled or not IsHoldingBasketball() then return end
     local Goal, Distance = GetGoal()
     if Goal then
-        TriggerTouchEvent()
         local velocity = GetPlayerVelocity()
         local velocityAdjustment = velocity * 0.05
         local BasketPosition = Goal.Position + Vector3.new(0, GetArc(math.floor(Distance)), 0) + velocityAdjustment
@@ -111,7 +111,7 @@ Humanoid.StateChanged:Connect(function(_, NewState)
     if NewState == Enum.HumanoidStateType.Jumping then
         task.wait(0.3)
         local _, Distance = GetGoal()
-        AdjustCameraForJump()
+        -- Removed auto-shoot trigger here
         SetAutoPower(math.floor(Distance))
     end
 end)
