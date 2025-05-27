@@ -1,14 +1,14 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Accurate Auto Shoot",
+   Name = "Perfect Hoop Auto Shoot",
    Icon = 0,
    LoadingTitle = "Auto Shoot",
    LoadingSubtitle = "by Author",
    Theme = "Default",
    ConfigurationSaving = {
       Enabled = true,
-      FileName = "DirectHoopShoot"
+      FileName = "AutoShootHoop"
    },
    KeySystem = false
 })
@@ -67,18 +67,19 @@ local function SetAutoPower(Distance)
     if Power then Player:SetAttribute("Power", Power) end
 end
 
-local function AimAndShoot()
+local function AimAndShootAtHoop()
     local Goal, Distance = GetGoal()
     if Goal and IsHoldingBasketball() then
         SetAutoPower(math.floor(Distance))
+        local targetPos = Goal.Position + Vector3.new(0, 1.5, 0) -- Aim directly at center of hoop
         local originalCF = Camera.CFrame
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, Goal.Position + Vector3.new(0, 2.5, 0)) -- Aim directly at hoop center
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
         task.wait(0.05)
         VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
         task.wait(0.01)
         VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
         task.wait(0.05)
-        Camera.CFrame = originalCF -- Restore view
+        Camera.CFrame = originalCF
     end
 end
 
@@ -86,7 +87,7 @@ local Humanoid = Character:WaitForChild("Humanoid")
 Humanoid.StateChanged:Connect(function(_, NewState)
     if AutoShootEnabled and NewState == Enum.HumanoidStateType.Jumping then
         task.wait(0.3)
-        AimAndShoot()
+        AimAndShootAtHoop()
     end
 end)
 
