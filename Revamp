@@ -1,14 +1,14 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Auto Shoot High Arc",
+   Name = "Accurate Auto Shoot",
    Icon = 0,
    LoadingTitle = "Auto Shoot",
    LoadingSubtitle = "by Author",
    Theme = "Default",
    ConfigurationSaving = {
       Enabled = true,
-      FileName = "HighArcAutoShoot"
+      FileName = "DirectHoopShoot"
    },
    KeySystem = false
 })
@@ -21,17 +21,8 @@ local AutoPowerEnabled = false
 
 local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
+local Camera = workspace.CurrentCamera
 local VirtualInputManager = game:GetService("VirtualInputManager")
-
-local function GetArc(dist)
-    return ({
-        [59] = 34, [60] = 34, [61] = 34, [62] = 34,
-        [63] = 32, [64] = 32, [65] = 32,
-        [66] = 29, [67] = 29,
-        [68] = 27, [69] = 27,
-        [70] = 24, [71] = 24, [72] = 22
-    })[dist] or 34 -- Always high arc fallback
-end
 
 local function IsHoldingBasketball()
     local Basketball = Character:FindFirstChild("Basketball")
@@ -58,12 +49,6 @@ local function GetGoal()
     return Goal, Distance
 end
 
-local function TriggerShoot()
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
-    task.wait(0.01)
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
-end
-
 local function SetAutoPower(Distance)
     if not AutoPowerEnabled then return end
     local Power = nil
@@ -82,15 +67,26 @@ local function SetAutoPower(Distance)
     if Power then Player:SetAttribute("Power", Power) end
 end
 
+local function AimAndShoot()
+    local Goal, Distance = GetGoal()
+    if Goal and IsHoldingBasketball() then
+        SetAutoPower(math.floor(Distance))
+        local originalCF = Camera.CFrame
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, Goal.Position + Vector3.new(0, 2.5, 0)) -- Aim directly at hoop center
+        task.wait(0.05)
+        VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
+        task.wait(0.01)
+        VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
+        task.wait(0.05)
+        Camera.CFrame = originalCF -- Restore view
+    end
+end
+
 local Humanoid = Character:WaitForChild("Humanoid")
 Humanoid.StateChanged:Connect(function(_, NewState)
     if AutoShootEnabled and NewState == Enum.HumanoidStateType.Jumping then
         task.wait(0.3)
-        if IsHoldingBasketball() then
-            local _, Distance = GetGoal()
-            SetAutoPower(math.floor(Distance))
-            TriggerShoot()
-        end
+        AimAndShoot()
     end
 end)
 
