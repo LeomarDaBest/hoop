@@ -1,14 +1,14 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Your Script Name",
+   Name = "Auto Shoot High Arc",
    Icon = 0,
-   LoadingTitle = "Script Name",
+   LoadingTitle = "Auto Shoot",
    LoadingSubtitle = "by Author",
    Theme = "Default",
    ConfigurationSaving = {
       Enabled = true,
-      FileName = "Big Hub"
+      FileName = "HighArcAutoShoot"
    },
    KeySystem = false
 })
@@ -16,14 +16,12 @@ local Window = Rayfield:CreateWindow({
 local Tab = Window:CreateTab("Shooting", 4483362458)
 Tab:CreateSection("Shooting Features")
 
-local MobileAimbotEnabled = false
+local AutoShootEnabled = false
 local AutoPowerEnabled = false
 
 local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
-local Camera = workspace.CurrentCamera
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService")
 
 local function GetArc(dist)
     return ({
@@ -32,7 +30,7 @@ local function GetArc(dist)
         [66] = 29, [67] = 29,
         [68] = 27, [69] = 27,
         [70] = 24, [71] = 24, [72] = 22
-    })[dist] or 4
+    })[dist] or 34 -- Always high arc fallback
 end
 
 local function IsHoldingBasketball()
@@ -60,34 +58,10 @@ local function GetGoal()
     return Goal, Distance
 end
 
-local function TriggerTouchEvent()
-    -- Remove offset: tap in center of screen
-    local screenWidth = workspace.CurrentCamera.ViewportSize.X
-    local screenHeight = workspace.CurrentCamera.ViewportSize.Y
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, screenWidth / 2, screenHeight / 2)
+local function TriggerShoot()
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
     task.wait(0.01)
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, screenWidth / 2, screenHeight / 2)
-end
-
-local function GetPlayerVelocity()
-    return Character:WaitForChild("HumanoidRootPart").Velocity
-end
-
-local function AdjustCameraForJump()
-    if not MobileAimbotEnabled or not IsHoldingBasketball() then return end
-    local Goal, Distance = GetGoal()
-    if Goal then
-        local velocity = GetPlayerVelocity()
-        local velocityAdjustment = velocity * 0.05
-        local BasketPosition = Goal.Position + Vector3.new(0, GetArc(math.floor(Distance)), 0) + velocityAdjustment
-        local OldCFrame = Camera.CFrame
-        Camera.CFrame = CFrame.new(Character.Head.Position, BasketPosition)
-        task.wait(0.02)
-        Camera.CFrame = OldCFrame
-
-        -- Trigger the shot after aiming
-        TriggerTouchEvent()
-    end
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
 end
 
 local function SetAutoPower(Distance)
@@ -108,24 +82,24 @@ local function SetAutoPower(Distance)
     if Power then Player:SetAttribute("Power", Power) end
 end
 
--- Auto aim + shoot when jumping
 local Humanoid = Character:WaitForChild("Humanoid")
 Humanoid.StateChanged:Connect(function(_, NewState)
-    if NewState == Enum.HumanoidStateType.Jumping then
+    if AutoShootEnabled and NewState == Enum.HumanoidStateType.Jumping then
         task.wait(0.3)
-        local _, Distance = GetGoal()
-        SetAutoPower(math.floor(Distance))
-        AdjustCameraForJump()
+        if IsHoldingBasketball() then
+            local _, Distance = GetGoal()
+            SetAutoPower(math.floor(Distance))
+            TriggerShoot()
+        end
     end
 end)
 
--- UI Setup
 Tab:CreateToggle({
-   Name = "Mobile Aimbot",
+   Name = "Auto Shoot on Jump",
    CurrentValue = false,
-   Flag = "MobileAimbot",
+   Flag = "AutoShoot",
    Callback = function(Value)
-       MobileAimbotEnabled = Value
+       AutoShootEnabled = Value
    end
 })
 
