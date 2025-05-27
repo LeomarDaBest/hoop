@@ -49,40 +49,45 @@ local function GetGoal()
     return Goal, Distance
 end
 
+-- Improved function to calculate power based on distance to hoop
 local function SetAutoPower(Distance)
-    if not AutoPowerEnabled then return end
     local Power = nil
-    if Distance >= 60 and Distance <= 61 then Power = 75 end
-    if Distance >= 38 and Distance <= 39 then Power = 60 end
-    if Distance >= 16 and Distance <= 17 then Power = 30 end
-    if Distance >= 51 and Distance <= 52 then Power = 65 end
-    if Distance >= 49 and Distance <= 50 then Power = 65 end
-    if Distance >= 43 and Distance <= 44 then Power = 60 end
-    if Distance >= 47 and Distance <= 48 then Power = 65 end
-    if Distance >= 37 and Distance <= 38 then Power = 55 end
-    if Distance == 54 then Power = 70 end
-    if Distance >= 44 and Distance <= 45 then Power = 60 end
-    if Distance >= 8 and Distance <= 12 then Power = 20 end
-    if Distance >= 17 and Distance <= 19 then Power = 20 end
+    if Distance >= 60 then Power = 75 end
+    if Distance >= 50 and Distance < 60 then Power = 70 end
+    if Distance >= 40 and Distance < 50 then Power = 60 end
+    if Distance >= 30 and Distance < 40 then Power = 50 end
+    if Distance >= 20 and Distance < 30 then Power = 40 end
+    if Distance < 20 then Power = 30 end
     if Power then Player:SetAttribute("Power", Power) end
 end
 
+-- Function to ensure the shot is made directly inside the hoop
 local function AimAndShootAtHoop()
     local Goal, Distance = GetGoal()
     if Goal and IsHoldingBasketball() then
-        SetAutoPower(math.floor(Distance))
-        local targetPos = Goal.Position + Vector3.new(0, 1.5, 0) -- Aim directly at center of hoop
+        SetAutoPower(Distance)
+
+        -- Aim directly at the center of the hoop and adjust for a high arc
+        local targetPos = Goal.Position + Vector3.new(0, 3, 0)  -- Slightly above the hoop center
+        local angleAdjustment = Vector3.new(0, math.clamp(Distance / 100, 2, 3), 0)  -- High arc for longer shots
+
+        -- Position camera to align the shot
         local originalCF = Camera.CFrame
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos + angleAdjustment)
         task.wait(0.05)
+
+        -- Simulate the shot with the calculated power
         VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
         task.wait(0.01)
         VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
         task.wait(0.05)
+
+        -- Reset camera position
         Camera.CFrame = originalCF
     end
 end
 
+-- Detect when jumping and trigger auto-shoot
 local Humanoid = Character:WaitForChild("Humanoid")
 Humanoid.StateChanged:Connect(function(_, NewState)
     if AutoShootEnabled and NewState == Enum.HumanoidStateType.Jumping then
@@ -91,6 +96,7 @@ Humanoid.StateChanged:Connect(function(_, NewState)
     end
 end)
 
+-- UI to toggle Auto Shoot
 Tab:CreateToggle({
    Name = "Auto Shoot on Jump",
    CurrentValue = false,
@@ -100,6 +106,7 @@ Tab:CreateToggle({
    end
 })
 
+-- UI to toggle Auto Power
 Tab:CreateToggle({
    Name = "Auto Power",
    CurrentValue = false,
