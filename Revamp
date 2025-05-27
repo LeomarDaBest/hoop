@@ -1,64 +1,101 @@
--- Hoopz Aimbot GUI
--- This script creates a GUI with an aimbot feature for the Roblox game Hoopz
+-- Optional: Enable Secure Mode to reduce detection
+getgenv().SecureMode = true
 
--- Retrieve the necessary game objects
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HoopzGame = game:GetService("Workspace"):WaitForChild("Hoopz")
-local Ball = HoopzGame:WaitForChild("Ball")
-local Basket = HoopzGame:WaitForChild("Basket")
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
--- Create the GUI
-local AimbotGUI = Instance.new("ScreenGui")
-AimbotGUI.Name = "AimbotGUI"
-AimbotGUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
+-- Create Main Window
+local Window = Rayfield:CreateWindow({
+    Name = "Phantom.cc",
+    LoadingTitle = "Loading Phantom.cc",
+    LoadingSubtitle = "by HOOPZ",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "PhantomConfigs", -- Custom folder for configurations
+        FileName = "PhantomSettings"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "getphantom", -- Discord invite code
+        RememberJoins = false
+    },
+    KeySystem = false, -- Set to true to enable key system
+    KeySettings = {
+        Title = "Phantom.cc Key System",
+        Subtitle = "Enter your access key",
+        Note = "Join our Discord (getphantom) for the key",
+        FileName = "PhantomKey",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"your-key-here"} -- Replace with your actual key(s)
+    }
+})
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-MainFrame.Parent = AimbotGUI
+-- Create Tabs
+local ShootingTab = Window:CreateTab("Shooting", 1234567890) -- Replace with actual asset ID for icon
+local MovementTab = Window:CreateTab("Movement", 1234567891)
+local MiscTab = Window:CreateTab("Misc", 1234567892)
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Name = "TitleLabel"
-TitleLabel.Text = "Hoopz Aimbot"
-TitleLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
-TitleLabel.Position = UDim2.new(0.1, 0, 0.1, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.TextSize = 24
-TitleLabel.Parent = MainFrame
+-- Shooting Tab Elements
+local CamlockEnabled = false
+ShootingTab:CreateToggle({
+    Name = "Enable Camlock",
+    CurrentValue = CamlockEnabled,
+    Flag = "CamlockToggle",
+    Callback = function(Value)
+        CamlockEnabled = Value
+        -- Add your Camlock enabling/disabling logic here
+    end,
+})
 
-local AimbotToggle = Instance.new("TextButton")
-AimbotToggle.Name = "AimbotToggle"
-AimbotToggle.Text = "Toggle Aimbot"
-AimbotToggle.Size = UDim2.new(0.8, 0, 0.2, 0)
-AimbotToggle.Position = UDim2.new(0.1, 0, 0.4, 0)
-AimbotToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-AimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotToggle.Font = Enum.Font.SourceSans
-AimbotToggle.TextSize = 18
-AimbotToggle.Parent = MainFrame
+ShootingTab:CreateSlider({
+    Name = "Camlock Smoothness",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = 50,
+    Flag = "CamlockSmoothness",
+    Callback = function(Value)
+        -- Update Camlock smoothness setting
+    end,
+})
 
-local AimbotActive = false
+-- Movement Tab Elements
+local SpeedEnabled = false
+MovementTab:CreateToggle({
+    Name = "Enable Speed Hack",
+    CurrentValue = SpeedEnabled,
+    Flag = "SpeedHackToggle",
+    Callback = function(Value)
+        SpeedEnabled = Value
+        -- Add your speed hack logic here
+    end,
+})
 
-AimbotToggle.MouseButton1Click:Connect(function()
-    AimbotActive = not AimbotActive
-    if AimbotActive then
-        AimbotToggle.Text = "Aimbot Active"
-        AimbotToggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        -- Aimbot logic
-        while AimbotActive do
-            local BallPosition = Ball.Position
-            local BasketPosition = Basket.Position
-            local ShootDirection = (BasketPosition - BallPosition).Unit
-            Ball:SetAttribute("Velocity", ShootDirection * 100) -- Adjust power as needed
-            wait()
-        end
-    else
-        AimbotToggle.Text = "Toggle Aimbot"
-        AimbotToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    end
-end)
+MovementTab:CreateSlider({
+    Name = "Speed Multiplier",
+    Range = {1, 10},
+    Increment = 0.1,
+    Suffix = "x",
+    CurrentValue = 1,
+    Flag = "SpeedMultiplier",
+    Callback = function(Value)
+        -- Update speed multiplier
+    end,
+})
+
+-- Misc Tab Elements
+MiscTab:CreateButton({
+    Name = "Reset Settings",
+    Callback = function()
+        Rayfield:ResetConfiguration()
+    end,
+})
+
+MiscTab:CreateParagraph({
+    Title = "About Phantom.cc",
+    Content = "Phantom.cc is a powerful tool designed to enhance your gaming experience. Join our Discord for updates and support."
+})
+
+-- Load Saved Configuration
+Rayfield:LoadConfiguration()
