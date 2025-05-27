@@ -1,117 +1,64 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Hoopz Aimbot GUI
+-- This script creates a GUI with an aimbot feature for the Roblox game Hoopz
 
-local Window = Rayfield:CreateWindow({
-   Name = "Perfect Hoop Auto Shoot",
-   Icon = 0,
-   LoadingTitle = "Auto Shoot",
-   LoadingSubtitle = "by Author",
-   Theme = "Default",
-   ConfigurationSaving = {
-      Enabled = true,
-      FileName = "AutoShootHoop"
-   },
-   KeySystem = false
-})
+-- Retrieve the necessary game objects
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HoopzGame = game:GetService("Workspace"):WaitForChild("Hoopz")
+local Ball = HoopzGame:WaitForChild("Ball")
+local Basket = HoopzGame:WaitForChild("Basket")
 
-local Tab = Window:CreateTab("Shooting", 4483362458)
-Tab:CreateSection("Shooting Features")
+-- Create the GUI
+local AimbotGUI = Instance.new("ScreenGui")
+AimbotGUI.Name = "AimbotGUI"
+AimbotGUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local AutoShootEnabled = false
-local AutoPowerEnabled = false
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MainFrame.Parent = AimbotGUI
 
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local Camera = workspace.CurrentCamera
-local VirtualInputManager = game:GetService("VirtualInputManager")
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "TitleLabel"
+TitleLabel.Text = "Hoopz Aimbot"
+TitleLabel.Size = UDim2.new(0.8, 0, 0.2, 0)
+TitleLabel.Position = UDim2.new(0.1, 0, 0.1, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 24
+TitleLabel.Parent = MainFrame
 
-local function IsHoldingBasketball()
-    local Basketball = Character:FindFirstChild("Basketball")
-    return Basketball and Basketball:FindFirstChild("Ball")
-end
+local AimbotToggle = Instance.new("TextButton")
+AimbotToggle.Name = "AimbotToggle"
+AimbotToggle.Text = "Toggle Aimbot"
+AimbotToggle.Size = UDim2.new(0.8, 0, 0.2, 0)
+AimbotToggle.Position = UDim2.new(0.1, 0, 0.4, 0)
+AimbotToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+AimbotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotToggle.Font = Enum.Font.SourceSans
+AimbotToggle.TextSize = 18
+AimbotToggle.Parent = MainFrame
 
-local function GetGoal()
-    local Distance, Goal = math.huge, nil
-    local CharacterPosition = Character.PrimaryPart.Position
-    for _, container in ipairs({workspace:FindFirstChild("Courts"), workspace:FindFirstChild("PracticeArea")}) do
-        if container then
-            for _, court in ipairs(container:GetChildren()) do
-                for _, Obj in ipairs(court:GetDescendants()) do
-                    if Obj.Name == "Swish" and Obj.Parent:FindFirstChildOfClass("TouchTransmitter") then
-                        local Magnitude = (CharacterPosition - Obj.Parent.Position).Magnitude
-                        if Magnitude < Distance then
-                            Distance, Goal = Magnitude, Obj.Parent
-                        end
-                    end
-                end
-            end
+local AimbotActive = false
+
+AimbotToggle.MouseButton1Click:Connect(function()
+    AimbotActive = not AimbotActive
+    if AimbotActive then
+        AimbotToggle.Text = "Aimbot Active"
+        AimbotToggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        -- Aimbot logic
+        while AimbotActive do
+            local BallPosition = Ball.Position
+            local BasketPosition = Basket.Position
+            local ShootDirection = (BasketPosition - BallPosition).Unit
+            Ball:SetAttribute("Velocity", ShootDirection * 100) -- Adjust power as needed
+            wait()
         end
-    end
-    return Goal, Distance
-end
-
--- Improved function to calculate power based on distance to hoop
-local function SetAutoPower(Distance)
-    local Power = nil
-    if Distance >= 60 then Power = 75 end
-    if Distance >= 50 and Distance < 60 then Power = 70 end
-    if Distance >= 40 and Distance < 50 then Power = 60 end
-    if Distance >= 30 and Distance < 40 then Power = 50 end
-    if Distance >= 20 and Distance < 30 then Power = 40 end
-    if Distance < 20 then Power = 30 end
-    if Power then Player:SetAttribute("Power", Power) end
-end
-
--- Function to ensure the shot is made directly inside the hoop
-local function AimAndShootAtHoop()
-    local Goal, Distance = GetGoal()
-    if Goal and IsHoldingBasketball() then
-        SetAutoPower(Distance)
-
-        -- Aim directly at the center of the hoop and adjust for a high arc
-        local targetPos = Goal.Position + Vector3.new(0, 3, 0)  -- Slightly above the hoop center
-        local angleAdjustment = Vector3.new(0, math.clamp(Distance / 100, 2, 3), 0)  -- High arc for longer shots
-
-        -- Position camera to align the shot
-        local originalCF = Camera.CFrame
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos + angleAdjustment)
-        task.wait(0.05)
-
-        -- Simulate the shot with the calculated power
-        VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, 355, 70)
-        task.wait(0.01)
-        VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, 355, 70)
-        task.wait(0.05)
-
-        -- Reset camera position
-        Camera.CFrame = originalCF
-    end
-end
-
--- Detect when jumping and trigger auto-shoot
-local Humanoid = Character:WaitForChild("Humanoid")
-Humanoid.StateChanged:Connect(function(_, NewState)
-    if AutoShootEnabled and NewState == Enum.HumanoidStateType.Jumping then
-        task.wait(0.3)
-        AimAndShootAtHoop()
+    else
+        AimbotToggle.Text = "Toggle Aimbot"
+        AimbotToggle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     end
 end)
-
--- UI to toggle Auto Shoot
-Tab:CreateToggle({
-   Name = "Auto Shoot on Jump",
-   CurrentValue = false,
-   Flag = "AutoShoot",
-   Callback = function(Value)
-       AutoShootEnabled = Value
-   end
-})
-
--- UI to toggle Auto Power
-Tab:CreateToggle({
-   Name = "Auto Power",
-   CurrentValue = false,
-   Flag = "AutoPower",
-   Callback = function(Value)
-       AutoPowerEnabled = Value
-   end
-})
