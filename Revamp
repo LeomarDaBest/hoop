@@ -28,9 +28,10 @@ local RunService = game:GetService("RunService")
 local function GetArc(dist)
     return ({
         [59] = 34, [60] = 34, [61] = 34, [62] = 34,
-        [63] = 32, [64] = 32, [65] = 32, [66] = 29, 
-        [67] = 29, [68] = 27, [69] = 27, [70] = 24, 
-        [71] = 24, [72] = 22
+        [63] = 32, [64] = 32, [65] = 32,
+        [66] = 29, [67] = 29,
+        [68] = 27, [69] = 27,
+        [70] = 24, [71] = 24, [72] = 22
     })[dist] or 4
 end
 
@@ -60,13 +61,12 @@ local function GetGoal()
 end
 
 local function TriggerTouchEvent()
-    local screenWidth = Camera.ViewportSize.X
-    local screenHeight = Camera.ViewportSize.Y
-    local touchX = screenWidth / 2
-    local touchY = screenHeight / 2
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, touchX, touchY)
+    -- Remove offset: tap in center of screen
+    local screenWidth = workspace.CurrentCamera.ViewportSize.X
+    local screenHeight = workspace.CurrentCamera.ViewportSize.Y
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.Begin.Value, screenWidth / 2, screenHeight / 2)
     task.wait(0.01)
-    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, touchX, touchY)
+    VirtualInputManager:SendTouchEvent(1, Enum.UserInputState.End.Value, screenWidth / 2, screenHeight / 2)
 end
 
 local function GetPlayerVelocity()
@@ -74,7 +74,6 @@ local function GetPlayerVelocity()
 end
 
 local function AdjustCameraForJump()
-    -- No automatic shooting, just adjust camera if the aimbot is enabled
     if not MobileAimbotEnabled or not IsHoldingBasketball() then return end
     local Goal, Distance = GetGoal()
     if Goal then
@@ -85,6 +84,9 @@ local function AdjustCameraForJump()
         Camera.CFrame = CFrame.new(Character.Head.Position, BasketPosition)
         task.wait(0.02)
         Camera.CFrame = OldCFrame
+
+        -- Trigger the shot after aiming
+        TriggerTouchEvent()
     end
 end
 
@@ -106,16 +108,18 @@ local function SetAutoPower(Distance)
     if Power then Player:SetAttribute("Power", Power) end
 end
 
+-- Auto aim + shoot when jumping
 local Humanoid = Character:WaitForChild("Humanoid")
 Humanoid.StateChanged:Connect(function(_, NewState)
     if NewState == Enum.HumanoidStateType.Jumping then
         task.wait(0.3)
         local _, Distance = GetGoal()
-        -- Removed auto-shoot trigger here
         SetAutoPower(math.floor(Distance))
+        AdjustCameraForJump()
     end
 end)
 
+-- UI Setup
 Tab:CreateToggle({
    Name = "Mobile Aimbot",
    CurrentValue = false,
@@ -133,5 +137,3 @@ Tab:CreateToggle({
        AutoPowerEnabled = Value
    end
 })
-
--- Removed the sliders for X and Y offsets
