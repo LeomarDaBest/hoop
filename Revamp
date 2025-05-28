@@ -22,7 +22,7 @@ wait(2)
 
 fadeOut:Play()
 
-getgenv().FentWtf = loadstring(game:HttpGet("https://pastefy.app/52qD5iTV/raw"))()
+getgenv().BlueWtf = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/refs/heads/main/Hydra%20Lib/Hydra%20Lib%20Source.lua"))()
 local ui = blue.wtf:Create("blue.wtf")
 
 local Players = game:GetService("Players")
@@ -54,7 +54,7 @@ local TargetPlayer = nil
 local lastVisualUpdate = 0
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BlueWtfUi"
+screenGui.Name = "FentWtfUI"
 screenGui.Parent = LocalPlayer.PlayerGui
 
 local textLabel = Instance.new("TextLabel")
