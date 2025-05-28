@@ -54,7 +54,7 @@ local TargetPlayer = nil
 local lastVisualUpdate = 0
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FentWtfUI"
+screenGui.Name = "BlueWtfUi"
 screenGui.Parent = LocalPlayer.PlayerGui
 
 local textLabel = Instance.new("TextLabel")
