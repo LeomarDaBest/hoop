@@ -1,576 +1,137 @@
-local ScreenGui = Instance.new("ScreenGui")
-local imageLabel = Instance.new("ImageLabel")
-
-ScreenGui.Parent = game:GetService("CoreGui")
-imageLabel.Parent = ScreenGui
-imageLabel.Size = UDim2.new(0, 500, 0, 500)
-imageLabel.Position = UDim2.new(0.5, -250, 0.5, -250)
-imageLabel.BackgroundTransparency = 1
-imageLabel.Image = ""
-imageLabel.ImageTransparency = 1
-
-local tweenService = game:GetService("TweenService")
-local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-local fadeIn = tweenService:Create(imageLabel, tweenInfo, {ImageTransparency = 0})
-local fadeOut = tweenService:Create(imageLabel, tweenInfo, {ImageTransparency = 1})
-
-fadeIn:Play()
-fadeIn.Completed:Wait()
-
-wait(2)
-
-fadeOut:Play()
-
-getgenv().BlueWtf = loadstring(game:HttpGet("https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/refs/heads/main/Hydra%20Lib/Hydra%20Lib%20Source.lua"))()
-local ui = blue.wtf:Create("blue.wtf")
-
+-- Services
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Camera = workspace.CurrentCamera
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-local SpeedAmount = 0.35
-local SpeedEnabled = false
-local OOBEnabled = false
-local storedOOBEvents = {}
-local MobileCamlockEnabled = false
-local PCCamlockEnabled = false
-local ShotIndicatorEnabled = false
-local TextIndicatorEnabled = false
-local MaxCamlockDistance = 73
-local HighlightColor = "Green"
-local autoGuard = false
-local legitAutoGuard = false
-local guardThread = nil
-local legitGuardThread = nil
-local ReachEnabled = false
-local MagSize = 50
-local Following = false
-local TargetPlayer = nil
-local lastVisualUpdate = 0
+-- Find the hoop (adjust if needed, e.g., if it's in a different location)
+local Hoop = Workspace:FindFirstChild("Hoop")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FentWtfUI"
-screenGui.Parent = LocalPlayer.PlayerGui
+-- UI Creation for Mobile
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "HoopzUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false  -- Persists through respawns
 
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(0, 200, 0, 50)
-textLabel.Position = UDim2.new(0.5, -100, 0.9, 0)
-textLabel.BackgroundTransparency = 1
-textLabel.TextTransparency = 0.3
-textLabel.TextSize = 24
-textLabel.Font = Enum.Font.GothamBold
-textLabel.TextColor3 = Color3.new(1, 1, 1)
-textLabel.Text = ""
-textLabel.Visible = false
-textLabel.Parent = screenGui
+-- Create toggle buttons (mobile-friendly: large size, simple text)
+local CamlockButton = Instance.new("TextButton")
+CamlockButton.Name = "CamlockToggle"
+CamlockButton.Text = "Camlock: Off"
+CamlockButton.Size = UDim2.new(0, 150, 0, 60)  -- Larger for mobile tapping
+CamlockButton.Position = UDim2.new(0, 10, 0, 10)
+CamlockButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+CamlockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CamlockButton.Parent = ScreenGui
 
-local lastHoopCheck = 0
-local cachedHoop = nil
-local cachedDistance = 0
-local lastGuardUpdate = 0
-local lastCamlockCheck = 0
+local AutoPowerButton = Instance.new("TextButton")
+AutoPowerButton.Name = "AutoPowerToggle"
+AutoPowerButton.Text = "Auto Power: Off"
+AutoPowerButton.Size = UDim2.new(0, 150, 0, 60)
+AutoPowerButton.Position = UDim2.new(0, 170, 0, 10)
+AutoPowerButton.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+AutoPowerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoPowerButton.Parent = ScreenGui
 
-local function GetGoal()
-    local now = tick()
-    if now - lastHoopCheck < 0.5 and cachedHoop then
-        return cachedHoop, cachedDistance
-    end
+local AutoGuardButton = Instance.new("TextButton")
+AutoGuardButton.Name = "AutoGuardToggle"
+AutoGuardButton.Text = "Auto Guard: Off"
+AutoGuardButton.Size = UDim2.new(0, 150, 0, 60)
+AutoGuardButton.Position = UDim2.new(0, 330, 0, 10)
+AutoGuardButton.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+AutoGuardButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoGuardButton.Parent = ScreenGui
 
-    if not Character or not Character.PrimaryPart then return nil, 0 end
-    
-    local Distance, Goal = math.huge, nil
-    local CharacterPosition = Character.PrimaryPart.Position
+local SpeedboostButton = Instance.new("TextButton")
+SpeedboostButton.Name = "SpeedboostToggle"
+SpeedboostButton.Text = "Speedboost: Off"
+SpeedboostButton.Size = UDim2.new(0, 150, 0, 60)
+SpeedboostButton.Position = UDim2.new(0, 490, 0, 10)
+SpeedboostButton.BackgroundColor3 = Color3.fromRGB(200, 0, 100)
+SpeedboostButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedboostButton.Parent = ScreenGui
 
-    for _, container in pairs({workspace:FindFirstChild("Courts"), workspace:FindFirstChild("PracticeArea")}) do
-        if container then
-            for _, court in pairs(container:GetChildren()) do
-                local swish = court:FindFirstChild("Swish", true)
-                if swish and swish.Parent:FindFirstChildOfClass("TouchTransmitter") then
-                    local Magnitude = (CharacterPosition - swish.Parent.Position).Magnitude
-                    if Magnitude < Distance then
-                        Distance = Magnitude
-                        Goal = swish.Parent
-                    end
-                end
-            end
-        end
-    end
+-- Toggles
+local camlockEnabled = false
+local autoPowerEnabled = false
+local autoGuardEnabled = false
+local speedboostEnabled = false
 
-    lastHoopCheck = now
-    cachedHoop = Goal
-    cachedDistance = Distance
-    return Goal, Distance
-end
-
-local PCArcValues = {
-    [59] = 30, [60] = 30, [61] = 30, [62] = 30,
-    [63] = 28, [64] = 28, [65] = 28,
-    [66] = 25, [67] = 25,
-    [68] = 23, [69] = 23,
-    [70] = 20, [71] = 20,
-    [72] = 18
-}
-
-local MobileArcValues = {
-    [59] = 20, [60] = 20, [61] = 20, [62] = 20,
-    [63] = 18, [64] = 18, [65] = 18,
-    [66] = 15, [67] = 15,
-    [68] = 13, [69] = 13,
-    [70] = 10, [71] = 10
-}
-
-local function PCArcSystem(dist)
-    return PCArcValues[dist] or 8
-end
-
-local function MobileArcSystem(dist)
-    return MobileArcValues[dist] or 8
-end
-
-local function HasBasketball()
-    return Character and Character:FindFirstChild("Basketball")
-end
-
-local function findClosestPlayerWithBall()
-    local now = tick()
-    if now - lastGuardUpdate < 0.2 then return nil end
-    lastGuardUpdate = now
-
-    if not Character or not Character:FindFirstChild("HumanoidRootPart") then return nil end
-    
-    local closestPlayer, closestDistance = nil, math.huge
-    local hrp = Character.HumanoidRootPart.Position
-    
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local targetHRP = player.Character:FindFirstChild("HumanoidRootPart")
-            local basketball = player.Character:FindFirstChild("Basketball")
-            
-            if targetHRP and basketball then
-                local distance = (hrp - targetHRP.Position).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestPlayer = player
-                end
-            end
-        end
-    end
-    
-    return closestPlayer
-end
-
-local function getNearestBallHolder()
-    if not Character or not Character:FindFirstChild("HumanoidRootPart") then return nil end
-    
-    local nearestPlayer, nearestDistance = nil, math.huge
-    local hrpPos = Character.HumanoidRootPart.Position
-    
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local targetHRP = player.Character:FindFirstChild("HumanoidRootPart")
-            local basketball = player.Character:FindFirstChild("Basketball")
-            
-            if targetHRP and basketball then
-                local distance = (hrpPos - targetHRP.Position).Magnitude
-                if distance < nearestDistance and distance <= 25 then
-                    nearestDistance = distance
-                    nearestPlayer = player
-                end
-            end
-        end
-    end
-    
-    return nearestPlayer
-end
-
-local function followTarget()
-    while Following and TargetPlayer and TargetPlayer.Character and legitAutoGuard do
-        if not TargetPlayer.Character:FindFirstChild("Basketball") then
-            Following = false
-            TargetPlayer = nil
-            break
-        end
-
-        local humanoid = Character:FindFirstChild("Humanoid")
-        local targetRootPart = TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        
-        if humanoid and targetRootPart then
-            humanoid:MoveTo(targetRootPart.Position)
-        end
-        
-        task.wait(0.25)
-    end
-end
-
-local function GetClosestBall()
-    local ClosestBall, ClosestDistance = nil, math.huge
-    local RootPart = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not RootPart then return nil end
-    for _, OtherPlayer in ipairs(game.Players:GetPlayers()) do
-        if OtherPlayer ~= game.Players.LocalPlayer and OtherPlayer.Character then
-            local Ball = OtherPlayer.Character:FindFirstChild("Basketball") and OtherPlayer.Character.Basketball:FindFirstChild("Ball")
-            if Ball then
-                local Distance = (Ball.Position - RootPart.Position).Magnitude
-                if Distance < MagSize and Distance < ClosestDistance then
-                    ClosestBall = Ball
-                    ClosestDistance = Distance
-                end
-            end
-        end
-    end
-    return ClosestBall
-end
-
-local function GetClosestPart(Ball)
-    if not game.Players.LocalPlayer.Character then return nil end
-    local ClosestPart, ClosestDistance = nil, math.huge
-    for _, Part in ipairs(game.Players.LocalPlayer.Character:GetChildren()) do
-        if Part:IsA("BasePart") then
-            local Distance = (Part.Position - Ball.Position).Magnitude
-            if Distance < ClosestDistance then
-                ClosestDistance = Distance
-                ClosestPart = Part
-            end
-        end
-    end
-    return ClosestPart
-end
-
-local highlight
-
-local ColorValues = {
-    Green = Color3.fromRGB(0, 255, 0),
-    Blue = Color3.fromRGB(0, 150, 255),
-    Purple = Color3.fromRGB(170, 0, 255),
-    White = Color3.fromRGB(255, 255, 255)
-}
-
-local function GetColor()
-    return ColorValues[HighlightColor] or Color3.fromRGB(0, 255, 0)
-end
-
-local function UpdateVisuals()
-    local now = tick()
-    if now - lastVisualUpdate < 0.2 then return end
-    lastVisualUpdate = now
-
-    local goal, distance = GetGoal()
-    local hasBall = HasBasketball()
-    
-    if ShotIndicatorEnabled then
-        if not highlight and Character then
-            highlight = Instance.new("Highlight")
-            highlight.FillTransparency = 0.7
-            highlight.OutlineTransparency = 1
-            highlight.Parent = Character
-        end
-        
-        if highlight then
-            highlight.Enabled = hasBall and goal ~= nil
-            if hasBall and goal then
-                highlight.FillColor = distance <= MaxCamlockDistance and GetColor() or Color3.fromRGB(255, 0, 0)
-            end
-        end
-    end
-    
-    if TextIndicatorEnabled then
-        textLabel.Visible = hasBall and goal ~= nil
-        if hasBall and goal then
-            textLabel.Text = distance <= MaxCamlockDistance and "In Range" or "Out Range"
-            textLabel.TextColor3 = distance <= MaxCamlockDistance and GetColor() or Color3.fromRGB(255, 0, 0)
-        end
-    end
-end
-
-local function ExecuteCamlock()
-    local now = tick()
-    if now - lastCamlockCheck < 0.5 then return end
-    lastCamlockCheck = now
-
-    if not (MobileCamlockEnabled or PCCamlockEnabled) or not HasBasketball() then return end
-    
-    local goal, distance = GetGoal()
-    if not goal or distance > MaxCamlockDistance then return end
-    
-    local arc = PCCamlockEnabled and PCArcSystem(math.floor(distance)) or MobileArcSystem(math.floor(distance))
-    local basketPos = goal.Position + Vector3.new(0, arc, 0)
-    
-    local oldCF = Camera.CFrame
-    LocalPlayer.DevEnableMouseLock = false
-    Camera.CFrame = CFrame.new(Character.Head.Position, basketPos)
-    firesignal(LocalPlayer.PlayerGui.Button.MouseButton1Click)
-    task.wait(0.05)
-    Camera.CFrame = oldCF
-    LocalPlayer.DevEnableMouseLock = true
-end
-
-local function SetupCharacter(newChar)
-    Character = newChar
-    
-    if highlight then
-        highlight:Destroy()
-        highlight = nil
-    end
-    
-    if ShotIndicatorEnabled then
-        highlight = Instance.new("Highlight")
-        highlight.FillTransparency = 0.7
-        highlight.OutlineTransparency = 1
-        highlight.Parent = Character
-    end
-    
-    local humanoid = newChar:WaitForChild("Humanoid")
-    humanoid.StateChanged:Connect(function(_, newState)
-        if newState == Enum.HumanoidStateType.Jumping then
-            ExecuteCamlock()
-        end
-    end)
-end
-
-local function ProcessOOB()
-    local courtsFolder = workspace:FindFirstChild("Courts")
-    if not courtsFolder then return end
-
-    for _, letter in pairs({"A", "B", "C", "D", "J", "K"}) do
-        local court = courtsFolder:FindFirstChild("Court "..letter)
-        if court then
-            if OOBEnabled then
-                local event = court:FindFirstChild("OOB")
-                if event and not storedOOBEvents["Court "..letter] then
-                    storedOOBEvents["Court "..letter] = event:Clone()
-                    event:Destroy()
-                end
-            elseif storedOOBEvents["Court "..letter] then
-                storedOOBEvents["Court "..letter]:Clone().Parent = court
-                storedOOBEvents["Court "..letter] = nil
-            end
-        end
-    end
-end
-
-local function ApplySpeed()
-    if not Character or not SpeedEnabled then return end
-    
-    local humanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-    local humanoid = Character:FindFirstChild("Humanoid")
-    if not humanoidRootPart or not humanoid then return end
-    
-    local moveDir = humanoid.MoveDirection
-    if moveDir.Magnitude > 0 then
-        humanoidRootPart.CFrame = humanoidRootPart.CFrame + moveDir * SpeedAmount / 10
-    end
-end
-
-local main = ui:CreateTab("Main")
-main:AddToggle("(Mobile) Camlock", false, function(value)
-    MobileCamlockEnabled = value
-    if value then PCCamlockEnabled = false end
+-- Button click handlers (works for mobile touches)
+CamlockButton.MouseButton1Click:Connect(function()
+    camlockEnabled = not camlockEnabled
+    CamlockButton.Text = "Camlock: " .. (camlockEnabled and "On" or "Off")
 end)
 
-main:AddToggle("(PC) Camlock", false, function(value)
-    PCCamlockEnabled = value
-    if value then MobileCamlockEnabled = false end
+AutoPowerButton.MouseButton1Click:Connect(function()
+    autoPowerEnabled = not autoPowerEnabled
+    AutoPowerButton.Text = "Auto Power: " .. (autoPowerEnabled and "On" or "Off")
 end)
 
-local move = ui:CreateTab("Movement")
-move:AddToggle("Speed", false, function(value)
-    SpeedEnabled = value
+AutoGuardButton.MouseButton1Click:Connect(function()
+    autoGuardEnabled = not autoGuardEnabled
+    AutoGuardButton.Text = "Auto Guard: " .. (autoGuardEnabled and "On" or "Off")
 end)
 
-move:AddSlider("Speed Amount", 0.1, 0.35, 0.35, 0.01, function(value)
-    SpeedAmount = value
+SpeedboostButton.MouseButton1Click:Connect(function()
+    speedboostEnabled = not speedboostEnabled
+    SpeedboostButton.Text = "Speedboost: " .. (speedboostEnabled and "On" or "Off")
 end)
 
-local guard = ui:CreateTab("Guarding")
-guard:AddToggle("Blatant Autoguard", false, function(state)
-    autoGuard = state
-    
-    if legitAutoGuard and state then
-        legitAutoGuard = false
-    end
-    
-    if state then
-        if guardThread then task.cancel(guardThread) end
-
-        guardThread = task.spawn(function()
-            while autoGuard and task.wait(0.1) do
-                local humanoid = Character:FindFirstChildOfClass("Humanoid")
-                local hrp = Character:FindFirstChild("HumanoidRootPart")
-                
-                if not humanoid or not hrp then continue end
-                
-                humanoid.AutoRotate = false
-                
-                local closestPlayer = findClosestPlayerWithBall()
-                
-                if closestPlayer and closestPlayer.Character then
-                    local targetHRP = closestPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    local basketball = closestPlayer.Character:FindFirstChild("Basketball")
-                    
-                    if targetHRP and basketball then
-                        humanoid:MoveTo(targetHRP.Position)
-                        hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(targetHRP.Position.X, hrp.Position.Y, targetHRP.Position.Z))
-                    end
-                end
-            end
-            
-            if Character and Character:FindFirstChildOfClass("Humanoid") then
-                Character:FindFirstChildOfClass("Humanoid").AutoRotate = true
-            end
-        end)
-    elseif guardThread then
-        task.cancel(guardThread)
-        guardThread = nil
-        
-        if Character and Character:FindFirstChildOfClass("Humanoid") then
-            Character:FindFirstChildOfClass("Humanoid").AutoRotate = true
+-- Camlock Feature: Locks camera to the hoop when jumping
+UserInputService.JumpRequest:Connect(function()
+    if camlockEnabled and Hoop then
+        local Camera = Workspace.CurrentCamera
+        if Camera then
+            Camera.CameraSubject = Hoop  -- Lock camera to the hoop
+            Camera.CameraType = Enum.CameraType.Scriptable  -- Make it scriptable for control
         end
     end
 end)
 
-guard:AddToggle("Legit Autoguard", false, function(state)
-    legitAutoGuard = state
-    
-    if autoGuard and state then
-        autoGuard = false
-        if guardThread then
-            task.cancel(guardThread)
-            guardThread = nil
-        end
-    end
-    
-    if state then
-        if legitGuardThread then task.cancel(legitGuardThread) end
-        
-        legitGuardThread = task.spawn(function()
-            while legitAutoGuard do
-                if not HasBasketball() then
-                    TargetPlayer = getNearestBallHolder()
-                    if TargetPlayer then
-                        Following = true
-                        followTarget()
-                    end
-                else
-                    Following = false
-                    TargetPlayer = nil
-                end
-                task.wait(0.5)
-            end
-        end)
+-- Auto Power Feature: Increases jump power when enabled
+RunService.Stepped:Connect(function()
+    if autoPowerEnabled then
+        Humanoid.JumpPower = 75  -- Boosted jump power (default is around 50)
     else
-        Following = false
-        TargetPlayer = nil
+        Humanoid.JumpPower = 50  -- Reset to default
+    end
+end)
+
+-- Auto Guard Feature: Makes the character face the nearest opponent
+RunService.Stepped:Connect(function()
+    if autoGuardEnabled then
+        local NearestOpponent = nil
+        local NearestDistance = math.huge
         
-        if legitGuardThread then
-            task.cancel(legitGuardThread)
-            legitGuardThread = nil
-        end
-    end
-end)
-
-local magnet = ui:CreateTab("Magnet")
-magnet:AddToggle("Mags", false, function(value)
-    ReachEnabled = value
-end)
-
-magnet:AddSlider("Magnet Range", 1, 150, 50, 1, function(value)
-    MagSize = value
-end)
-
-local visuals = ui:CreateTab("Visuals")
-visuals:AddToggle("Shot Indicator", false, function(value)
-    ShotIndicatorEnabled = value
-    if value and not highlight and Character then
-        highlight = Instance.new("Highlight")
-        highlight.FillTransparency = 0.7
-        highlight.OutlineTransparency = 1
-        highlight.Parent = Character
-    elseif not value and highlight then
-        highlight:Destroy()
-        highlight = nil
-    end
-end)
-
-visuals:AddToggle("Text Indicator", false, function(value)
-    TextIndicatorEnabled = value
-    textLabel.Visible = value
-end)
-
-visuals:AddDropdown("Highlight Color", {"Green", "Blue", "Purple", "White"}, function(selected)
-    HighlightColor = selected
-end)
-
-local misc = ui:CreateTab("Misc")
-misc:AddToggle("No OOB", false, function(state)
-    OOBEnabled = state
-    ProcessOOB()
-end)
-
-UserInputService.InputBegan:Connect(function(input, isTyping)
-    if isTyping then return end
-    
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        SpeedEnabled = not SpeedEnabled
-    end
-    
-    if input.KeyCode == Enum.KeyCode.R and legitAutoGuard then
-        if HasBasketball() then return end
-        
-        if Following then
-            Following = false
-            TargetPlayer = nil
-        else
-            TargetPlayer = getNearestBallHolder()
-            if TargetPlayer then
-                Following = true
-                followTarget()
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local OpponentRoot = Player.Character.HumanoidRootPart
+                local Distance = (RootPart.Position - OpponentRoot.Position).Magnitude
+                if Distance < NearestDistance and Distance < 50 then  -- Only consider opponents within 50 studs
+                    NearestOpponent = OpponentRoot
+                    NearestDistance = Distance
+                end
             end
         end
-    end
-end)
-
-workspace.ChildAdded:Connect(function(child)
-    if child.Name == "Courts" and OOBEnabled then
-        task.wait(2)
-        ProcessOOB()
-    end
-end)
-
-workspace.ChildRemoved:Connect(function(child)
-    if child.Name == "Courts" and OOBEnabled then
-        for k in pairs(storedOOBEvents) do
-            storedOOBEvents[k] = nil
+        
+        if NearestOpponent then
+            RootPart.CFrame = CFrame.new(RootPart.Position, NearestOpponent.Position)  -- Face the opponent
         end
     end
 end)
 
-RunService.RenderStepped:Connect(function()
-    if SpeedEnabled then
-        ApplySpeed()
-    end
-    UpdateVisuals()
-    
-    if ReachEnabled then
-        local Ball = GetClosestBall()
-        local RootPart = Ball and GetClosestPart(Ball)
-        if Ball and RootPart then
-            firetouchinterest(RootPart, Ball, 0)
-            task.wait()
-            firetouchinterest(RootPart, Ball, 1)
-        end
+-- Speedboost Feature: Increases walk speed when enabled
+RunService.Stepped:Connect(function()
+    if speedboostEnabled then
+        Humanoid.WalkSpeed = 30  -- Boosted speed (default is 16)
+    else
+        Humanoid.WalkSpeed = 16  -- Reset to default
     end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function(newChar)
-    Character = newChar
-    SetupCharacter(newChar)
-end)
-
-if Character then 
-    SetupCharacter(Character)
-end
+print("Hoopz Script Loaded! Toggle features using the UI buttons.")
